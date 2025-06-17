@@ -1,5 +1,5 @@
 # IEDHTrans
-
+The code for the paper "IEDHTrans: A Hybrid Network based on Local Self-Supervision Learning with Interactive Encoders and Differential Hierarchical Transformers for Multi-Phase Breast Cancer Segmentation" submitted to
 # Usage
 ## 1.Installation
 Install IEDHTrans as below
