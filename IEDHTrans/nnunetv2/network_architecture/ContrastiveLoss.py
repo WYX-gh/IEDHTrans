@@ -52,7 +52,6 @@ class HybridContrastiveLoss(nn.Module):
         }
         self.ntxent = NTXentLoss(temperature=temperature)
 
-        # 支持 TokenSeg 的多尺度通道结构
         self.projection_layer_32 = nn.Linear(32, projection_dim)
         self.projection_layer_128= nn.Linear(128, projection_dim)
         self.projection_layer_512 = nn.Linear(512, projection_dim)
@@ -62,7 +61,6 @@ class HybridContrastiveLoss(nn.Module):
         f1_flat = f1.view(B, f1.shape[1], -1).mean(dim=2)
         f2_flat = f2.view(B, f2.shape[1], -1).mean(dim=2)
 
-        # 支持 256 维通道
         if f1_flat.shape[1] == 32:
             f1_proj = self.projection_layer_32(f1_flat)
         elif f1_flat.shape[1] == 128:
