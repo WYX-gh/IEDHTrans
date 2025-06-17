@@ -1,0 +1,6 @@
+# Project requirements other than nnU-Net 
+timm
+triton
+flash_attn
+math
+typing
