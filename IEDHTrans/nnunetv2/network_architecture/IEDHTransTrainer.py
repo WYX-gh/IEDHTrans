@@ -14,8 +14,8 @@ from nnunetv2.network_architecture.ContrastiveLoss import HybridContrastiveLoss
 class IEDHTransTrainer(nnUNetTrainer):
     def __init__(self, plans, configuration, fold, dataset_json, unpack_dataset=True, device=torch.device("cuda")):
         super().__init__(plans, configuration, fold, dataset_json, unpack_dataset, device)
-        self.enable_deep_supervision = True  # 启用深度监督
-        self.contrastive_weight = 0.1 #根据实验结果进行调整
+        self.enable_deep_supervision = True 
+        self.contrastive_weight = 0.1 
         self.dice_weight = 0.45
         self.ce_weight = 0.45
 
@@ -44,7 +44,7 @@ class IEDHTransTrainer(nnUNetTrainer):
                           ignore_label=self.label_manager.ignore_label, 
                           dice_class=MemoryEfficientSoftDiceLoss)
 
-        # 深监督损失
+   
         deep_supervision_scales =self._get_deep_supervision_scales()
         if deep_supervision_scales is not None:
             weights = [1 / (2 ** i) for i in range(len(deep_supervision_scales))]
@@ -56,38 +56,37 @@ class IEDHTransTrainer(nnUNetTrainer):
         return loss
 
     def initialize(self):
-        """初始化自定义模型结构"""
         if not self.was_initialized:
-            # 确定输入通道数
+      
             self.num_input_channels = determine_num_input_channels(
                 self.plans_manager, self.configuration_manager, self.dataset_json
             )
             
-            # 初始化PLHN模型
+      
             self.network = TokenSeg(
-                inch=self.num_input_channels,  # 动态适配输入通道
+                inch=self.num_input_channels, 
                 outch=self.label_manager.num_segmentation_heads,
                 base_channel=32,
                 hidden_size=256,
-                imgsize=self.configuration_manager.patch_size,  # 使用配置的patch size
+                imgsize=self.configuration_manager.patch_size, 
                 TransformerLayerNum=3
             ).to(self.device)
 
 
-            # 编译模型（如果启用）
+ 
             if self._do_i_compile():
                 self.print_to_log_file('Using torch.compile...')
                 self.network = torch.compile(self.network)
 
-            # 初始化优化器
+ 
             self.optimizer, self.lr_scheduler = self.configure_optimizers()
             
-            # DDP处理
+   
             if self.is_ddp:
                 self.network = torch.nn.SyncBatchNorm.convert_sync_batchnorm(self.network)
                 self.network = DDP(self.network, device_ids=[self.local_rank])
 
-            # 初始化损失函数
+   
             self.loss = self._build_loss()
             self.was_initialized = True
 
@@ -108,23 +107,14 @@ class IEDHTransTrainer(nnUNetTrainer):
 
         self.optimizer.zero_grad(set_to_none=True)
 
-        # 前向传播
+
         with torch.autocast(self.device.type, enabled=(self.device.type == 'cuda')):
             output = self.network(data)
-
 
             seg_outputs = output['seg_output']
             contrastive_features = output['features']
 
-            #print("seg_outputs shape:", [output.shape for output in seg_outputs])
-            #print("target length:", len(target))
-            #for i in range(len(seg_outputs)):
-            #    print(f"target[{i}] shape:", target[i].shape)
-
             seg_loss = self.loss(seg_outputs, target)
-
-            
-
 
             contrastive_loss = self.contrastive_criterion(contrastive_features)
             total_loss = (
@@ -132,10 +122,8 @@ class IEDHTransTrainer(nnUNetTrainer):
                 self.contrastive_weight * contrastive_loss
             )
 
-
             #l = self.loss(output, target)
 
-        # 反向传播
         if self.grad_scaler is not None:
             self.grad_scaler.scale(total_loss).backward()
             #self.grad_scaler.unscale_(self.optimizer)
@@ -165,15 +153,13 @@ class IEDHTransTrainer(nnUNetTrainer):
         else:
             target = target.to(self.device)
 
-        # 前向传播
+
         with torch.no_grad():
             output = self.network(data)
             seg_outputs = output['seg_output']
-            #l = self.loss(output, target)
             l = self.loss(seg_outputs, target)
 
-        # 计算验证指标
-        #axes = [0] + list(range(2, output[0].ndim))
+
         axes = [0] + list(range(2, seg_outputs[0].ndim))
         if self.label_manager.has_regions:
             predicted_segmentation_onehot = (torch.sigmoid(seg_outputs[0]) > 0.5).long()
