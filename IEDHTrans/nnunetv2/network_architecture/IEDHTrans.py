@@ -41,13 +41,11 @@ def rotary_kernel(
     SIN,
     CU_SEQLENS,
     SEQLEN_OFFSETS,  
-    # Matrix dimensions
     seqlen,
     nheads,
     rotary_dim,
     seqlen_ro,
     CACHE_KEY_SEQLEN,
-    # strides
     stride_out_batch,
     stride_out_seqlen,
     stride_out_nheads,
@@ -56,7 +54,6 @@ def rotary_kernel(
     stride_x_seqlen,
     stride_x_nheads,
     stride_x_headdim,
-    # Meta-parameters
     BLOCK_K: tl.constexpr,
     IS_SEQLEN_OFFSETS_TENSOR: tl.constexpr,
     IS_VARLEN: tl.constexpr,
@@ -89,7 +86,6 @@ def rotary_kernel(
     rk_half = tl.arange(0, BLOCK_K // 2)
 
     if not INTERLEAVED:
-        # Load the 1st and 2nd halves of X, do calculation, then store to 1st and 2nd halves of OUT
         X = X + (rm[:, None] * stride_x_seqlen + rk_half[None, :] * stride_x_headdim)
         COS = COS + (rm_cs[:, None] * rotary_dim_half + rk_half[None, :])
         SIN = SIN + (rm_cs[:, None] * rotary_dim_half + rk_half[None, :])
@@ -111,7 +107,6 @@ def rotary_kernel(
             sin = -sin
         o0 = x0 * cos - x1 * sin
         o1 = x0 * sin + x1 * cos
-        # write back result
         OUT = OUT + (rm[:, None] * stride_out_seqlen + rk_half[None, :] * stride_out_headdim)
         tl.store(OUT, o0, mask=(rm[:, None] < seqlen) & (rk_half[None, :] < rotary_dim_half))
         tl.store(
@@ -120,13 +115,7 @@ def rotary_kernel(
             mask=(rm[:, None] < seqlen) & (rk_half[None, :] < rotary_dim_half),
         )
     else:
-        # We don't want to load X[0, 2, 4, ...] and X[1, 3, 5, ...] separately since both are slow.
-        # Instead, we load x0 = X[0, 1, 2, 3, ...] and x1 = X[1, 0, 3, 2, ...].
-        # Loading x0 will be fast but x1 will be slow.
-        # Then we load cos = COS[0, 0, 1, 1, ...] and sin = SIN[0, 0, 1, 1, ...].
-        # Then we do the calculation and use tl.where to pick put the right outputs for the even
-        # and for the odd indices.
-        rk_swap = rk + ((rk + 1) % 2) * 2 - 1  # 1, 0, 3, 2, 5, 4, ...
+        rk_swap = rk + ((rk + 1) % 2) * 2 - 1  
         rk_repeat = tl.arange(0, BLOCK_K) // 2
         X0 = X + (rm[:, None] * stride_x_seqlen + rk[None, :] * stride_x_headdim)
         X1 = X + (rm[:, None] * stride_x_seqlen + rk_swap[None, :] * stride_x_headdim)
@@ -220,11 +209,9 @@ def apply_rotary(
         if rotary_dim <= 32
         else (64 if rotary_dim <= 64 else (128 if rotary_dim <= 128 else 256))
     )
-    grid = lambda META: (triton.cdiv(seqlen, META["BLOCK_M"]), batch, nheads)  # noqa
+    grid = lambda META: (triton.cdiv(seqlen, META["BLOCK_M"]), batch, nheads)  
     BLOCK_M = 4 if interleaved else (8 if rotary_dim <= 64 else 4)
 
-    # Need this, otherwise Triton tries to launch from cuda:0 and we get
-    # ValueError: Pointer argument (at 0) cannot be accessed from Triton (cpu tensor?)
     with torch.cuda.device(x.device.index):
         rotary_kernel[grid](
             output,  # data ptrs
@@ -279,7 +266,6 @@ class ApplyRotaryEmb(torch.autograd.Function):
             inplace=inplace,
         )
         if isinstance(seqlen_offsets, int):
-            # Can't save int with save_for_backward
             ctx.save_for_backward(cos, sin, cu_seqlens)
             ctx.seqlen_offsets = seqlen_offsets
         else:
@@ -297,8 +283,6 @@ class ApplyRotaryEmb(torch.autograd.Function):
             cos, sin, cu_seqlens, seqlen_offsets = ctx.saved_tensors
         else:
             cos, sin, cu_seqlens = ctx.saved_tensors
-        # TD [2023-09-02]: For some reason Triton (2.0.0.post1) errors with
-        # "[CUDA]: invalid device context", and cloning makes it work. Idk why. Triton 2.1.0 works.
         if not ctx.interleaved and not ctx.inplace:
             do = do.clone()
         dx = apply_rotary(
@@ -594,15 +578,15 @@ class MPFI(nn.Module):
 
         fused = torch.cat([x1_calibrated, x2_calibrated], dim=1)  # c_out/2 + c_out/2 = c_out
         
-        out = self.residual_block(fused)  # 输出通道=c_out
+        out = self.residual_block(fused)  
         
-        fuse_a = self.cbam(out)  # 保持通道数=c_out
+        fuse_a = self.cbam(out) 
 
         y = self.conv_x2(fuse_a)  # c_out → cx2
-        x2_new = y + original_x2  # 保持原始通道数
+        x2_new = y + original_x2  
         
         x = self.conv_x1(fuse_a)  # c_out → cx1
-        x1_new = x + original_x1  # 保持原始通道数
+        x1_new = x + original_x1  
         
         return [x1_new, x2_new]
 
@@ -676,6 +660,7 @@ class TokenSeg(nn.Module):
         self.outch=outch
 
         self.modalities = inch 
+        
         # encoder1
         self.encoder1_layer1 = conv_block_2_3d(self.base_channel, self.base_channel, activation)
         self.encoder1_layer2 = conv_block_3d(self.base_channel*2, self.base_channel * 4, activation)
@@ -686,7 +671,7 @@ class TokenSeg(nn.Module):
         self.encoder2_layer2 = conv_block_3d(self.base_channel*2, self.base_channel * 4, activation)
         self.encoder2_layer3 = conv_block_3d(self.base_channel * 8, self.base_channel * 16, activation)
 
-         # DHFormer
+         # DHFormer module
         self.transformer_blocks = nn.ModuleList([
             nn.ModuleList([
                 TransformerBlock(
@@ -700,43 +685,43 @@ class TokenSeg(nn.Module):
         ])
 
 
-
+        # Linear layer
         self.mlp_adjust_c1 = nn.Linear(base_channel*32, hidden_size)
         self.mlp_adjust_c2 = nn.Linear(base_channel*32, hidden_size)
         self.mlp_adjust_c3 = nn.Linear(base_channel*32, hidden_size)
 
-
+        
         self.up_c2 = nn.Upsample(scale_factor=(2,2,2), mode='trilinear', align_corners=False)
         self.up_c3 = nn.Upsample(scale_factor=(4,4,4), mode='trilinear', align_corners=False)
 
-
+        
         self.fusion = nn.Sequential(
             nn.Conv3d(hidden_size*3, 256, kernel_size=1),
             nn.InstanceNorm3d(256), 
             activation)
         
-
+        # DHFormer downsampling
         self.downsample1 = conv_block_3d(self.base_channel*32, self.base_channel*32, activation)
         self.downsample2 = conv_block_3d(self.base_channel*32, self.base_channel*32, activation)
           
-
-        self.conv_3d_NoDown1 = conv_3d_NoDown(1, self.base_channel, activation)#用于对原始图像进行卷积处理
-        self.conv_3d_NoDown2 = conv_3d_NoDown(1, self.base_channel, activation)#用于对原始图像进行卷积处理
-        self.conv_3d_NoDown3 = conv_3d_NoDown(self.base_channel * 3 , self.base_channel * 1 , activation)#用于最后output前的卷积
+     
+        self.conv_3d_NoDown1 = conv_3d_NoDown(1, self.base_channel, activation)
+        self.conv_3d_NoDown2 = conv_3d_NoDown(1, self.base_channel, activation)
+        self.conv_3d_NoDown3 = conv_3d_NoDown(self.base_channel * 3 , self.base_channel * 1 , activation)
 
 
         self.trans_1 = conv_trans_block_z_3d(self.base_channel*8, self.base_channel * 4, activation)
         self.trans_2 = conv_trans_block_z_3d(self.base_channel * 12, self.base_channel * 4, activation)
-        self.trans_3 = conv_trans_block_3d(self.base_channel * 4 + self.base_channel * 2, self.base_channel, activation)# +self.base_channeel * 2以满足x1_layer1和x2_layer1的通道数
+        self.trans_3 = conv_trans_block_3d(self.base_channel * 4 + self.base_channel * 2, self.base_channel, activation)
         self.out = nn.Conv3d(self.base_channel * 1, self.outch,  kernel_size=1)
                                  
 
 
-        #MPFI
+        # MPFI module
         self.mpfi_1 = MPFI(self.base_channel, self.base_channel , self.base_channel * 2)
         self.mpfi_2 = MPFI(self.base_channel * 4, self.base_channel * 4, self.base_channel * 8)
 
-
+        # Deep supervision
         self.decoder_out1=nn.Conv3d(self.base_channel * 4 + self.base_channel * 2, self.outch, 3,1,1)
         self.decoder_out2=nn.Conv3d(self.base_channel * 12, self.outch, 3,1,1)
         self.decoder_out3=nn.Conv3d(self.base_channel * 8 , self.outch, 3,1,1)
