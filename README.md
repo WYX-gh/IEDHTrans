@@ -2,16 +2,16 @@
 
 # Usage
 ## 1.Installation
-Install PEHTrans as below
+Install IEDHTrans as below
 ```
 git clone https://github.com/WYX-gh/IEDHTrans.git
 pip install -e .
 pip install -r requirements.txt
 ```
-The [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) contains required packages other than the nnunet project
+The [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) contains required packages other than the nnUNet project
 
 Note: Our network can also be used in other ways. You can follow the steps below.
-Based on the nnU-Netv2 network, place our model file [network_architecture](https://github.com/WYX-gh/IEDHTrans/tree/main/IEDHTrans/nnunetv2/network_architecture) in the nnunet folder you are using, and then install the additional required packages in [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) to use it.
+Based on the nnUNetv2 network, place our model file [network_architecture](https://github.com/WYX-gh/IEDHTrans/tree/main/IEDHTrans/nnunetv2/network_architecture) in the nnunet folder you are using, and then install the additional required packages in [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) to use it.
 
 ## 2.Pre-processing
 All compared methods use the same pre-processing steps as nnUNet.
@@ -68,7 +68,7 @@ Among them, _0000 is the pre-contrast period and _0001 is the first post-contras
 [nnFormer](https://github.com/282857341/nnFormer)  
 [PA-Net](https://github.com/Houjunfeng203934/PA-Net)  
 [PLHN](https://github.com/ZhouL-lab/PLHN)  
-[PHTrans](https://github.com/lseventeen/PHTrans)
+[PHTrans](https://github.com/lseventeen/PHTrans)  
 [STU-Net](https://github.com/uni-medical/STU-Net)
 
 # Contact
