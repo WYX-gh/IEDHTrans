@@ -8,7 +8,7 @@ git clone https://github.com/WYX-gh/IEDHTrans.git
 cd IEDHTrans-main
 pip install -e .
 ```
-After completing the above operations, it is also necessary to install the additional required packages in the [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) one by one.
+After completing the above operations, it is also necessary to install the additional required packages in the [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) one by one.  
 The requirements.txt contains required packages other than the nnUNet project
 
 Note: Our network can also be used in other ways. You can follow the steps below.
