@@ -13,7 +13,7 @@ from nnunetv2.training.loss.deep_supervision import DeepSupervisionWrapper
 class IEDHTransTrainerNoContrastiveLoss(nnUNetTrainer):
     def __init__(self, plans, configuration, fold, dataset_json, unpack_dataset=True, device=torch.device("cuda")):
         super().__init__(plans, configuration, fold, dataset_json, unpack_dataset, device)
-        self.enable_deep_supervision = True  # 启用深度监督
+        self.enable_deep_supervision = True  
         if self.device.type == 'cuda':
             self.grad_scaler = GradScaler()
         else:
@@ -32,7 +32,7 @@ class IEDHTransTrainerNoContrastiveLoss(nnUNetTrainer):
                           ignore_label=self.label_manager.ignore_label, 
                           dice_class=MemoryEfficientSoftDiceLoss)
 
-        # 深监督损失
+
         deep_supervision_scales =self._get_deep_supervision_scales()
         if deep_supervision_scales is not None:
             weights = [1 / (2 ** i) for i in range(len(deep_supervision_scales))]
