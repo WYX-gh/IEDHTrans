@@ -803,7 +803,7 @@ class TokenSeg(nn.Module):
 
         fused = torch.cat([c1, c2, c3], dim=1)
         trans_fused_feature = self.fusion(fused) # channel 256, [D/4, H/8, W/8]
-        x=trans_fused_feature # # channel 256, [D/4, H/8, W/8]
+        x=trans_fused_feature # channel 256, [D/4, H/8, W/8]
         out3 = x
         
 
