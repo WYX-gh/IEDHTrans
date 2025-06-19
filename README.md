@@ -74,7 +74,7 @@ Among them, _0000 is the pre-contrast period and _0001 is the first post-contras
 
 # Contact
 For any query, please contact us for more information.  
-Yuexin Wang (ghw231784@gmail.com)
+Yuexin Wang (yxwang5212@outlook.com)
 
 
 # Acknowledgements
