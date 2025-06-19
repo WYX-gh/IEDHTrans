@@ -67,7 +67,7 @@ from nnunetv2.utilities.get_network_from_plans import get_network_from_plans
 from nnunetv2.utilities.helpers import empty_cache, dummy_context
 from nnunetv2.utilities.label_handling.label_handling import convert_labelmap_to_one_hot, determine_num_input_channels
 from nnunetv2.utilities.plans_handling.plans_handler import PlansManager
-from nnunetv2.training.nnUNetTrainer.PLHN import TokenSeg
+from nnunetv2.network_architecture.IEDHTrans import TokenSeg
 
 
 class nnUNetTrainer(object):
@@ -150,7 +150,7 @@ class nnUNetTrainer(object):
         self.oversample_foreground_percent = 0.33
         self.num_iterations_per_epoch = 250
         self.num_val_iterations_per_epoch = 50
-        self.num_epochs = 1000
+        self.num_epochs = 800
         self.current_epoch = 0
         self.enable_deep_supervision = True
 
@@ -900,7 +900,7 @@ class nnUNetTrainer(object):
 
         if isinstance(mod, TokenSeg):
             self.print_to_log_file("IEDHTrans model detected. Deep supervision is handled by the model's forward pass.", also_print_to_console=True)
-        elif hasattr(mod, 'decoder_output3') and hasattr(mod, 'decoder_output2') and hasattr(mod, 'decoder_output1'):
+        elif hasattr(mod, 'decoder_output4') and hasattr(mod, 'decoder_output3') and hasattr(mod, 'decoder_output2') and hasattr(mod, 'decoder_output1'):
             mod.decoder.deep_supervision = enabled
             self.print_to_log_file(f"Deep supervision enabled in decoder: {enabled}", also_print_to_console=True)
         else:
