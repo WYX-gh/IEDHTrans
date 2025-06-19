@@ -809,17 +809,17 @@ class TokenSeg(nn.Module):
 
 
         x = self.trans_1(x)  # channel 128, [D/2, H/4, W/4]
-        x = torch.cat([x, x1_layer2, x2_layer2], dim=1)    channel 128*3, [D/2, H/4, W/4]
+        x = torch.cat([x, x1_layer2, x2_layer2], dim=1) # channel 128*3, [D/2, H/4, W/4]
         out2 = x
 
 
         x = self.trans_2(x)  # channel 128, [D, H/2, W/2]
-        x = torch.cat([x, x1_layer1, x2_layer1], dim=1)  #  channel 128+64 ， [D, H/2, W/2]
+        x = torch.cat([x, x1_layer1, x2_layer1], dim=1)  # channel 128+64 ， [D, H/2, W/2]
         out1 = x
 
 
         x = self.trans_3(x)  # channel 32, [D, H, W]
-        x = torch.cat([x, modality1_conv, modality2_conv], dim=1)  #   channel 96, [D, H, W]
+        x = torch.cat([x, modality1_conv, modality2_conv], dim=1)  # channel 96, [D, H, W]
         x = self.conv_3d_NoDown3(x)  # channel 32, [D, H, W]
 
         x = self.out(x)
