@@ -10,7 +10,7 @@ from torch.cuda.amp import GradScaler
 from nnunetv2.training.loss.deep_supervision import DeepSupervisionWrapper
 
 
-class IEDHTransTrainerNoContrastiveLoss(nnUNetTrainer):
+class IEDHTransTrainer(nnUNetTrainer):
     def __init__(self, plans, configuration, fold, dataset_json, unpack_dataset=True, device=torch.device("cuda")):
         super().__init__(plans, configuration, fold, dataset_json, unpack_dataset, device)
         self.enable_deep_supervision = True  
