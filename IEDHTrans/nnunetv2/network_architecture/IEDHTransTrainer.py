@@ -8,28 +8,16 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from nnunetv2.network_architecture.IEDHTrans import TokenSeg
 from torch.cuda.amp import GradScaler
 from nnunetv2.training.loss.deep_supervision import DeepSupervisionWrapper
-from nnunetv2.network_architecture.ContrastiveLoss import HybridContrastiveLoss
 
 
 class IEDHTransTrainer(nnUNetTrainer):
     def __init__(self, plans, configuration, fold, dataset_json, unpack_dataset=True, device=torch.device("cuda")):
         super().__init__(plans, configuration, fold, dataset_json, unpack_dataset, device)
-        self.enable_deep_supervision = True 
-        self.contrastive_weight = 0.1 
-        self.dice_weight = 0.45
-        self.ce_weight = 0.45
-
+        self.enable_deep_supervision = True  
         if self.device.type == 'cuda':
             self.grad_scaler = GradScaler()
         else:
             self.grad_scaler = None 
-
-
-        self.contrastive_criterion = HybridContrastiveLoss(
-            cross_modality_weight=0.5,
-            cross_scale_weight=0.5,
-            temperature=0.5
-        ).to(self.device)
 
     def _build_loss(self):
         if self.label_manager.has_regions:
@@ -44,7 +32,7 @@ class IEDHTransTrainer(nnUNetTrainer):
                           ignore_label=self.label_manager.ignore_label, 
                           dice_class=MemoryEfficientSoftDiceLoss)
 
-   
+
         deep_supervision_scales =self._get_deep_supervision_scales()
         if deep_supervision_scales is not None:
             weights = [1 / (2 ** i) for i in range(len(deep_supervision_scales))]
@@ -57,36 +45,28 @@ class IEDHTransTrainer(nnUNetTrainer):
 
     def initialize(self):
         if not self.was_initialized:
-      
             self.num_input_channels = determine_num_input_channels(
                 self.plans_manager, self.configuration_manager, self.dataset_json
             )
-            
-      
             self.network = TokenSeg(
                 inch=self.num_input_channels, 
                 outch=self.label_manager.num_segmentation_heads,
                 base_channel=32,
                 hidden_size=256,
-                imgsize=self.configuration_manager.patch_size, 
+                imgsize=self.configuration_manager.patch_size,  
                 TransformerLayerNum=3
             ).to(self.device)
 
-
- 
             if self._do_i_compile():
                 self.print_to_log_file('Using torch.compile...')
                 self.network = torch.compile(self.network)
 
- 
             self.optimizer, self.lr_scheduler = self.configure_optimizers()
             
-   
             if self.is_ddp:
                 self.network = torch.nn.SyncBatchNorm.convert_sync_batchnorm(self.network)
                 self.network = DDP(self.network, device_ids=[self.local_rank])
 
-   
             self.loss = self._build_loss()
             self.was_initialized = True
 
@@ -107,41 +87,22 @@ class IEDHTransTrainer(nnUNetTrainer):
 
         self.optimizer.zero_grad(set_to_none=True)
 
-
         with torch.autocast(self.device.type, enabled=(self.device.type == 'cuda')):
-            output = self.network(data)
-
-            seg_outputs = output['seg_output']
-            contrastive_features = output['features']
-
-            seg_loss = self.loss(seg_outputs, target)
-
-            contrastive_loss = self.contrastive_criterion(contrastive_features)
-            total_loss = (
-                self.dice_weight * seg_loss + 
-                self.contrastive_weight * contrastive_loss
-            )
-
-            #l = self.loss(output, target)
+            output = self.network(data)['seg_output']
+            l = self.loss(output, target)
 
         if self.grad_scaler is not None:
-            self.grad_scaler.scale(total_loss).backward()
+            self.grad_scaler.scale(l).backward()
             #self.grad_scaler.unscale_(self.optimizer)
             torch.nn.utils.clip_grad_norm_(self.network.parameters(), 12)
             self.grad_scaler.step(self.optimizer)
             self.grad_scaler.update()
         else:
-            total_loss.backward()
+            l.backward()
             torch.nn.utils.clip_grad_norm_(self.network.parameters(), 12)
             self.optimizer.step()
 
-        #return {'loss': l.detach().cpu().numpy()}
-        return {
-            'loss': total_loss.detach().cpu().numpy(),
-            'total_loss': total_loss.detach().cpu().numpy(),
-            'seg_loss': seg_loss.detach().cpu().numpy(),
-            'contrastive_loss': contrastive_loss.detach().cpu().numpy()
-        }
+        return {'loss': l.detach().cpu().numpy()}
 
     def validation_step(self, batch: dict) -> dict:
         data = batch['data']
@@ -153,19 +114,16 @@ class IEDHTransTrainer(nnUNetTrainer):
         else:
             target = target.to(self.device)
 
-
         with torch.no_grad():
-            output = self.network(data)
-            seg_outputs = output['seg_output']
-            l = self.loss(seg_outputs, target)
+            output = self.network(data)['seg_output']
+            l = self.loss(output, target)
 
-
-        axes = [0] + list(range(2, seg_outputs[0].ndim))
+        axes = [0] + list(range(2, output[0].ndim))
         if self.label_manager.has_regions:
-            predicted_segmentation_onehot = (torch.sigmoid(seg_outputs[0]) > 0.5).long()
+            predicted_segmentation_onehot = (torch.sigmoid(output[0]) > 0.5).long()
         else:
-            output_seg = seg_outputs[0].argmax(1)[:, None]
-            predicted_segmentation_onehot = torch.zeros(seg_outputs[0].shape, device=seg_outputs[0].device)
+            output_seg = output[0].argmax(1)[:, None]
+            predicted_segmentation_onehot = torch.zeros(output[0].shape, device=output[0].device)
             predicted_segmentation_onehot.scatter_(1, output_seg, 1)
         
         tp, fp, fn, _ = get_tp_fp_fn_tn(predicted_segmentation_onehot, target[0], axes=axes)
