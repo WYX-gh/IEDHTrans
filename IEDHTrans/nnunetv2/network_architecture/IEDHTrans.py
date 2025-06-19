@@ -522,7 +522,7 @@ class CBAM3D(nn.Module):
             nn.AdaptiveAvgPool3d(1),
             nn.Conv3d(channels, channels // reduction_ratio, 1),
             nn.ReLU(),
-            #nn.Dropout3d(0.1),  
+            #nn.Dropout3d(0.1)  
             nn.Conv3d(channels // reduction_ratio, channels, 1),
             nn.Sigmoid()
         )
@@ -531,7 +531,7 @@ class CBAM3D(nn.Module):
             nn.Conv3d(channels, 1, 1),
             nn.InstanceNorm3d(1),
             nn.ReLU(),
-            #nn.Dropout3d(0.1), 
+            #nn.Dropout3d(0.1)
             nn.Conv3d(1, 1, 3, padding=1),
             nn.Sigmoid()
         )
