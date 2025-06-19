@@ -471,10 +471,10 @@ class TransformerBlock(nn.Module):
         self.drop_path = DropPath(drop_path) if drop_path > 0 else nn.Identity()
         self.norm2 = nn.LayerNorm(dim, eps=1e-5)
         self.mlp = Mlp(
-            in_features=dim,
-            hidden_features=int(dim * mlp_ratio),
-            act_layer=nn.GELU,
-            drop=drop,
+            in_features = dim,
+            hidden_features = int(dim * mlp_ratio),
+            act_layer = nn.GELU,
+            drop = drop,
         )
 
     def forward(self, x, cos=None, sin=None):  
@@ -657,7 +657,7 @@ class TokenSeg(nn.Module):
         self.hidden_size = hidden_size
         self.imgsize = imgsize
         activation = nn.LeakyReLU(0.2)
-        self.outch=outch
+        self.outch = outch
 
         self.modalities = inch 
         
@@ -722,10 +722,10 @@ class TokenSeg(nn.Module):
         self.mpfi_2 = MPFI(self.base_channel * 4, self.base_channel * 4, self.base_channel * 8)
 
         # Deep supervision
-        self.decoder_out1=nn.Conv3d(self.base_channel * 4 + self.base_channel * 2, self.outch, 3,1,1)
-        self.decoder_out2=nn.Conv3d(self.base_channel * 12, self.outch, 3,1,1)
-        self.decoder_out3=nn.Conv3d(self.base_channel * 8 , self.outch, 3,1,1)
-        self.decoder_out4=nn.Conv3d(self.base_channel * 8 , self.outch , 3,1,1)
+        self.decoder_out1 = nn.Conv3d(self.base_channel * 4 + self.base_channel * 2, self.outch, 3,1,1)
+        self.decoder_out2 = nn.Conv3d(self.base_channel * 12, self.outch, 3,1,1)
+        self.decoder_out3 = nn.Conv3d(self.base_channel * 8 , self.outch, 3,1,1)
+        self.decoder_out4 = nn.Conv3d(self.base_channel * 8 , self.outch , 3,1,1)
 
 
     def transformer_layer(self, feature, transformer_blocks, mlp_layer):
@@ -794,7 +794,7 @@ class TokenSeg(nn.Module):
         c1 = self.transformer_layer(x1, self.transformer_blocks[0], self.mlp_adjust_c1 ) # channel 256 ,[D/4,H/8,W/8]
         c2 = self.transformer_layer(x2, self.transformer_blocks[1], self.mlp_adjust_c2  )# channel 256 ,[D/8,H/16,W/16]
         c3 = self.transformer_layer(x3, self.transformer_blocks[2], self.mlp_adjust_c3  )# channel 256 ,[D/16,H/32,W/32]
-        out4=c2
+        out4 = c2
 
 
         c2 = self.up_c2(c2)   # channel 256 [D/4,H/8,W/8]
@@ -803,7 +803,7 @@ class TokenSeg(nn.Module):
 
         fused = torch.cat([c1, c2, c3], dim=1)
         trans_fused_feature = self.fusion(fused) # channel 256, [D/4, H/8, W/8]
-        x=trans_fused_feature # channel 256, [D/4, H/8, W/8]
+        x = trans_fused_feature # channel 256, [D/4, H/8, W/8]
         out3 = x
         
 
@@ -824,28 +824,10 @@ class TokenSeg(nn.Module):
 
         x = self.out(x)
 
-        x1=self.decoder_out1(out1)
-        x2=self.decoder_out2(out2)
-        x3=self.decoder_out3(out3)
-        x4=self.decoder_out4(out4)
+        x1 = self.decoder_out1(out1)
+        x2 = self.decoder_out2(out2)
+        x3 = self.decoder_out3(out3)
+        x4 = self.decoder_out4(out4)
        
-        return {
-        'seg_output': [x, x1, x2, x3, x4],
-        'features': {
-            'cross_modality': [
-                (x1_layer1, x2_layer1),
-                (x1_layer2, x2_layer2),
-                (x1_layer3, x2_layer3),
-            ],
-            'cross_scale': {
-                'modality1': [
-                    (x1_layer1, x1_layer2),
-                    (x1_layer2, x1_layer3),
-                ],
-                'modality2': [
-                    (x2_layer1, x2_layer2),
-                    (x2_layer2, x2_layer3),
-                ]
-            }
-        }
-    }
+        return [x, x1, x2, x3, x4]
+    
