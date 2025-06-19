@@ -32,7 +32,7 @@ from nnunetv2.utilities.json_export import recursive_fix_for_json_export
 from nnunetv2.utilities.label_handling.label_handling import determine_num_input_channels
 from nnunetv2.utilities.plans_handling.plans_handler import PlansManager, ConfigurationManager
 from nnunetv2.utilities.utils import create_lists_from_splitted_dataset_folder
-from nnunetv2.training.nnUNetTrainer.PLHN import TokenSeg
+from nnunetv2.network_architecture.IEDHTrans import TokenSeg
 
 
 
@@ -102,22 +102,14 @@ class nnUNetPredictor(object):
         if trainer_class is None:
             raise RuntimeError(f'Unable to locate trainer class {trainer_name} in nnunetv2.training.nnUNetTrainer. '
                                f'Please place it there (in any .py file)!')
-        #network = trainer_class.build_network_architecture(
-        #    configuration_manager.network_arch_class_name,
-        #    configuration_manager.network_arch_init_kwargs,
-        #    configuration_manager.network_arch_init_kwargs_req_import,
-        #    num_input_channels,
-        #    plans_manager.get_label_manager(dataset_json).num_segmentation_heads,
-        #    enable_deep_supervision=False
-        #)
-        #'''
-        network = TokenSeg( inch=2, 
+       
+        network = TokenSeg( inch=2,
                             outch=2,
                             base_channel=32,
                             hidden_size=256,
                             imgsize=[64,192,192],
                             TransformerLayerNum=3
-                           ).to(self.device)
+                ).to(self.device)
         '''
 
         network = trainer_class.build_network_architecture(
@@ -429,8 +421,6 @@ class nnUNetPredictor(object):
                     print(f'done with {os.path.basename(ofile)}')
                 else:
                     print(f'\nDone with image of shape {data.shape}:')
-
-
             ret = [i.get()[0] for i in r]
 
         if isinstance(data_iterator, MultiThreadedAugmenter):
@@ -441,8 +431,6 @@ class nnUNetPredictor(object):
         # clear device cache
         empty_cache(self.device)
         return ret
-    
-
 
     def predict_single_npy_array(self, input_image: np.ndarray, image_properties: dict,
                                  segmentation_previous_stage: np.ndarray = None,
@@ -524,7 +512,6 @@ class nnUNetPredictor(object):
 
         if self.verbose: print('Prediction done')
         torch.set_num_threads(n_threads)
-        prediction = torch.sigmoid(prediction)
         return prediction
 
     def _internal_get_sliding_window_slicers(self, image_size: Tuple[int, ...]):
@@ -563,7 +550,7 @@ class nnUNetPredictor(object):
 
     def _internal_maybe_mirror_and_predict(self, x: torch.Tensor) -> torch.Tensor:
         mirror_axes = self.allowed_mirroring_axes if self.use_mirroring else None
-        prediction = self.network(x)['seg_output'][0]
+        prediction = self.network(x)[0]
 
         if mirror_axes is not None:
             # check for invalid numbers in mirror_axes
@@ -575,7 +562,7 @@ class nnUNetPredictor(object):
                 c for i in range(len(mirror_axes)) for c in itertools.combinations(mirror_axes, i + 1)
             ]
             for axes in axes_combinations:
-                prediction += torch.flip(self.network(torch.flip(x, axes))['seg_output'][0], axes)
+                prediction += torch.flip(self.network(torch.flip(x, axes))[0], axes)
             prediction /= (len(axes_combinations) + 1)
         return prediction 
 
@@ -936,7 +923,6 @@ if __name__ == '__main__':
         use_folds=(0,),
         checkpoint_name='checkpoint_final.pth',
     )
-
     predictor.predict_from_files(join(nnUNet_raw, 'Dataset003_Liver/imagesTs'),
                                  join(nnUNet_raw, 'Dataset003_Liver/imagesTs_predlowres'),
                                  save_probabilities=False, overwrite=False,
