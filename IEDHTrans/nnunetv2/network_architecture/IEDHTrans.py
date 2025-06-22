@@ -613,10 +613,10 @@ def conv_3d_NoDown(in_dim, out_dim, activation):
 
 def conv_block_2_3d(in_dim, out_dim, activation):
     return nn.Sequential(
-        nn.Conv3d(out_dim, out_dim, kernel_size=3, stride=(1, 2, 2), padding=1), 
+        nn.Conv3d(in_dim, out_dim, kernel_size=3, stride=(1, 2, 2), padding=1), 
         nn.InstanceNorm3d(out_dim),
         activation,
-        ResidualConvBlock(in_dim, out_dim, stride=1),
+        ResidualConvBlock(out_dim, out_dim, stride=1),
         activation
     )
 
