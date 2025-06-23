@@ -28,7 +28,7 @@ Training models is done with the command.
 ```
 nnUNetv2_train DATASET_ID  UNET_CONFIGURATION   FOLD  -tr IEDHTransTrainer
 ```
-UNET_CONFIGURATION is a string that identifies the requested U-Net configuration (defaults: 2d, 3d_fullres, 3d_lowres, 3d_cascade_lowres).It should be noted that our network only supports 3d input. DATASET_NAME_OR_ID specifies what dataset should be trained on and FOLD specifies which fold of the 5-fold-cross-validation is trained.
+UNET_CONFIGURATION is a string that identifies the requested U-Net configuration (defaults: 2d, 3d_fullres, 3d_lowres, 3d_cascade_lowres). It should be noted that our network only supports 3d input. DATASET_NAME_OR_ID specifies what dataset should be trained on and FOLD specifies which fold of the 5-fold-cross-validation is trained.
 ## 4.Validation
 Validation is also done with the command.
 ```
@@ -36,7 +36,7 @@ nnUNetv2_predict -d  DATASET_ID  -i   "your_nnUNet_raw_path/imagesTs/"  -o   "yo
 
 ```
 # Dataset
-A total of two datasets were used in our paper,among which a private datasets was breast cancer, and the other dataset was a publicly available breast tumor dataset.If you wish to download this publicly available dataset, please refer to the relevant [paper](https://arxiv.org/abs/2406.13844v1) and the [GitHub](https://github.com/LidiaGarrucho/MAMA-MIA).
+A total of two datasets were used in our paper,among which a private datasets was breast cancer, and the other dataset was a publicly available breast tumor dataset. If you wish to download this publicly available dataset, please refer to the relevant [paper](https://arxiv.org/abs/2406.13844v1) and the [GitHub](https://github.com/LidiaGarrucho/MAMA-MIA).
 
 Additionally, We have made public an available internal clinical breast cancer [dataset](https://drive.google.com/file/d/1KwgF698k9VrfwyT2vf0wbmJa9m6rCKeF/view?usp=drive_link).
 
