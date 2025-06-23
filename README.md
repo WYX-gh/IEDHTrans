@@ -5,19 +5,19 @@ The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders an
 Install IEDHTrans as below.
 ```
 git clone https://github.com/WYX-gh/IEDHTrans.git
-cd IEDHTrans-main
+cd IEDHTrans
 pip install -e .
 ```
 After completing the above operations, it is also necessary to install the additional required packages in the [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) one by one.  
-The requirements.txt contains required packages other than the nnUNet project.
+The requirements.txt contains required packages other than the nnU-Netv2 project.
 
 Note: Our network can also be used in other ways. You can follow the steps below.
-Based on the nnUNetv2 network, place our model file [network_architecture](https://github.com/WYX-gh/IEDHTrans/tree/main/IEDHTrans/nnunetv2/network_architecture) in the nnunet folder you are using, and then install the additional required packages in [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) to use it.
+Based on your nnU-Netv2 network, place our model file [network_architecture](https://github.com/WYX-gh/IEDHTrans/tree/main/IEDHTrans/nnunetv2/network_architecture) in the nnU-Netv2 folder you are using, and then install the additional required packages in [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) to use it.
 
 ## 2.Pre-processing
-All compared methods use the same pre-processing steps as nnUNet.
+All compared methods use the same pre-processing steps as nnU-Netv2.
 
-Click [here](https://github.com/WYX-gh/IEDHTrans/tree/main/IEDHTrans/documentation) if you need to learn how to use nnUNet.
+Click [here](https://github.com/WYX-gh/IEDHTrans/tree/main/IEDHTrans/documentation) if you need to learn how to use nnU-Netv2.
 
 You can perform data preprocessing through the following command.
 ```
