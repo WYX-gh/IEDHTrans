@@ -15,7 +15,7 @@ Note: Our network can also be used in other ways. You can follow the steps below
 Based on your nnU-Netv2 network, place our model file [network_architecture](https://github.com/WYX-gh/IEDHTrans/tree/main/IEDHTrans/nnunetv2/network_architecture) in the nnU-Netv2 folder you are using, and then install the additional required packages in [requirements.txt](https://github.com/WYX-gh/IEDHTrans/blob/main/requirements.txt) to use it.
 
 ## 2.Pre-processing
-All compared methods use the same pre-processing steps as nnU-Netv2.
+The IEDHTrans use the same pre-processing steps as nnU-Netv2.
 
 Click [here](https://github.com/WYX-gh/IEDHTrans/tree/main/IEDHTrans/documentation) if you need to learn how to use nnU-Netv2.
 
