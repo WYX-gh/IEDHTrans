@@ -71,7 +71,7 @@ class IEDHTransTrainer(nnUNetTrainer):
             self.was_initialized = True
 
             self.print_to_log_file("="*50)
-            self.print_to_log_file("Thanks nnUNet" )
+            self.print_to_log_file("Thanks nnU-Net" )
             self.print_to_log_file("now using IEDHTrans model")
             self.print_to_log_file("="*50)
         
