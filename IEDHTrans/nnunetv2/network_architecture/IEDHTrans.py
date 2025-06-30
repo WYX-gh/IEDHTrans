@@ -599,7 +599,7 @@ def conv_block_3d(in_dim, out_dim, activation):
         nn.InstanceNorm3d(out_dim),
         activation,
         ResidualConvBlock(out_dim, out_dim, stride=1),  
-        activation
+        #activation
     )
 
 def conv_3d_NoDown(in_dim, out_dim, activation):
@@ -608,7 +608,7 @@ def conv_3d_NoDown(in_dim, out_dim, activation):
         nn.InstanceNorm3d(out_dim),
         activation,
         ResidualConvBlock(out_dim, out_dim, stride=1), 
-        activation
+        #activation
     )
 
 def conv_block_2_3d(in_dim, out_dim, activation):
@@ -617,7 +617,7 @@ def conv_block_2_3d(in_dim, out_dim, activation):
         nn.InstanceNorm3d(out_dim),
         activation,
         ResidualConvBlock(out_dim, out_dim, stride=1),
-        activation
+        #activation
     )
 
 
