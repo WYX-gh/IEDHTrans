@@ -1,5 +1,5 @@
 # IEDHTrans
-The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders and Differential Hierarchical Transformers for Multi-Phase Breast Cancer Segmentation" submitted to Computerized Medical Imaging and Graphics
+The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders and Differential Hierarchical Transformers for Multi-Phase Breast Cancer Segmentation" submitted to Alexandria Engineering Journal
 # Usage
 ## 1.Installation
 Install IEDHTrans as below.
