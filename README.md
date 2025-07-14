@@ -73,7 +73,7 @@ Among them, _0000 is the pre-contrast period and _0001 is the first post-contras
 [STU-Net](https://github.com/uni-medical/STU-Net)
 
 # Contact
-For any query, please contact us for more information.  
+Should you have any question, please create an issue on this repository or contact us for more information.  
 Yuexin Wang (yxwang5212@outlook.com)
 
 
