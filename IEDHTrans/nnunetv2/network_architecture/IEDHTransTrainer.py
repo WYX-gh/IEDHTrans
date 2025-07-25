@@ -88,7 +88,7 @@ class IEDHTransTrainer(nnUNetTrainer):
         self.optimizer.zero_grad(set_to_none=True)
 
         with torch.autocast(self.device.type, enabled=(self.device.type == 'cuda')):
-            output = self.network(data)['seg_output']
+            output = self.network(data)
             l = self.loss(output, target)
 
         if self.grad_scaler is not None:
@@ -115,7 +115,7 @@ class IEDHTransTrainer(nnUNetTrainer):
             target = target.to(self.device)
 
         with torch.no_grad():
-            output = self.network(data)['seg_output']
+            output = self.network(data)
             l = self.loss(output, target)
 
         axes = [0] + list(range(2, output[0].ndim))
