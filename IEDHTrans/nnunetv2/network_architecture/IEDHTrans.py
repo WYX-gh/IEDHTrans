@@ -6,6 +6,8 @@ import triton
 import triton.language as tl
 from typing import Optional, Union
 from flash_attn import flash_attn_func
+import torch.nn.functional as F
+from einops import rearrange
 
 
 class RMSNorm(nn.Module):
@@ -337,7 +339,6 @@ class Mlp(nn.Module):
         return x
     
 def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
-    """torch.repeat_interleave(x, dim=1, repeats=n_rep)"""
     bs, n_kv_heads, slen, head_dim = x.shape
     if n_rep == 1:
         return x
@@ -545,13 +546,62 @@ class CBAM3D(nn.Module):
         spatial_weight = self.spatial_gate(x)
         return x * spatial_weight
 
+
+class CrossAttention(nn.Module):
+    def __init__(self, in_channels_q, in_channels_kv, reduction_ratio=2):
+        super().__init__()
+        self.reduction_ratio = reduction_ratio 
+        inner_dim = in_channels_q // reduction_ratio
+        self.to_q = nn.Conv3d(in_channels_q, inner_dim, 1, bias=False)
+        self.to_k = nn.Conv3d(in_channels_kv, inner_dim, 1, bias=False)
+        self.to_v = nn.Conv3d(in_channels_kv, inner_dim, 1, bias=False)
+
+        self.pos_emb = nn.Sequential(
+            nn.Conv3d(in_channels_q, inner_dim, 3, padding=1),
+            nn.InstanceNorm3d(inner_dim),
+            nn.LeakyReLU(0.2)
+        )
+
+        self.to_out = nn.Sequential(
+            nn.Conv3d(inner_dim, in_channels_q, 1),
+            nn.InstanceNorm3d(in_channels_q),
+            nn.LeakyReLU(0.2)
+        )
+
+        self.norm = nn.LayerNorm(in_channels_q)
+
+    def forward(self, q_feat, kv_feat):
+        residual = q_feat
+        B, C, D, H, W = q_feat.shape
+
+        pos = self.pos_emb(q_feat)               
+        q = self.to_q(q_feat) * (1.0 + pos)    
+        k = self.to_k(kv_feat)
+        v = self.to_v(kv_feat)
+
+        attn = torch.einsum('b c d h w, b c d h w -> b d h w', q, k) / (self.reduction_ratio ** 0.5)
+        attn = torch.softmax(attn.view(B, -1), dim=1).view(B, D, H, W)
+
+        out = torch.einsum('b d h w, b c d h w -> b c d h w', attn, v)
+        out = self.to_out(out)
+
+        out = out.permute(0, 2, 3, 4, 1).contiguous() 
+        out = self.norm(out)
+        out = out.permute(0, 4, 1, 2, 3).contiguous()  
+
+        return out + residual
     
+
+
 class MPFI(nn.Module):
     def __init__(self, cx1, cx2, c_out):
         super().__init__()
-        self.conv1 = nn.Conv3d(cx1, c_out//2, kernel_size=1)  # cx1 → c_out/2
-        self.conv2 = nn.Conv3d(cx2, c_out//2, kernel_size=1)  # cx2 → c_out/2
-        
+        self.conv1 = nn.Conv3d(cx1, c_out//2, kernel_size=1)  
+        self.conv2 = nn.Conv3d(cx2, c_out//2, kernel_size=1) 
+
+        self.cross_attn_x1 = CrossAttention(cx1,cx2)
+        self.cross_attn_x2 = CrossAttention(cx2,cx1)
+
         self.cbam = CBAM3D(c_out) 
         
         self.residual_block = nn.Sequential(
@@ -571,25 +621,28 @@ class MPFI(nn.Module):
 
         original_x1, original_x2 = x1, x2
         
+        # X1 as Q，X2 as K/V
+        x1_attended = self.cross_attn_x1(x1, x2)
+        
+        # X2 as Q，X1 as K/V
+        x2_attended = self.cross_attn_x2(x2, x1)
 
-        x1_calibrated = self.conv1(x1)  # cx1 → c_out/2
-        x2_calibrated = self.conv2(x2)  # cx2 → c_out/2
+        x1_calibrated = self.conv1(x1_attended)  
+        x2_calibrated = self.conv2(x2_attended)  
         
 
-        fused = torch.cat([x1_calibrated, x2_calibrated], dim=1)  # c_out/2 + c_out/2 = c_out
-        
+        fused = torch.cat([x1_calibrated, x2_calibrated], dim=1)  
         out = self.residual_block(fused)  
         
         fuse_a = self.cbam(out) 
 
-        y = self.conv_x2(fuse_a)  # c_out → cx2
+        y = self.conv_x2(fuse_a)  
         x2_new = y + original_x2  
         
-        x = self.conv_x1(fuse_a)  # c_out → cx1
+        x = self.conv_x1(fuse_a) 
         x1_new = x + original_x1  
         
         return [x1_new, x2_new]
-
 
 
 
@@ -599,7 +652,7 @@ def conv_block_3d(in_dim, out_dim, activation):
         nn.InstanceNorm3d(out_dim),
         activation,
         ResidualConvBlock(out_dim, out_dim, stride=1),  
-        #activation
+        activation
     )
 
 def conv_3d_NoDown(in_dim, out_dim, activation):
@@ -607,8 +660,8 @@ def conv_3d_NoDown(in_dim, out_dim, activation):
         nn.Conv3d(in_dim, out_dim, 3,1,1),  
         nn.InstanceNorm3d(out_dim),
         activation,
-        ResidualConvBlock(out_dim, out_dim, stride=1), 
-        #activation
+        ResidualConvBlock(out_dim, out_dim, stride=1),
+        activation 
     )
 
 def conv_block_2_3d(in_dim, out_dim, activation):
@@ -617,7 +670,7 @@ def conv_block_2_3d(in_dim, out_dim, activation):
         nn.InstanceNorm3d(out_dim),
         activation,
         ResidualConvBlock(out_dim, out_dim, stride=1),
-        #activation
+        activation
     )
 
 
@@ -828,6 +881,9 @@ class TokenSeg(nn.Module):
         x2 = self.decoder_out2(out2)
         x3 = self.decoder_out3(out3)
         x4 = self.decoder_out4(out4)
-       
-        return [x, x1, x2, x3, x4]
+        
+
+
+        return [x, x1, x2 , x3, x4]
+
     
