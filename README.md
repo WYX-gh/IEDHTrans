@@ -1,5 +1,5 @@
 # IEDHTrans
-The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders and Differential Hierarchical Transformers for Multi-Phase Breast Cancer Segmentation" 
+The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders and Differential Hierarchical Transformers for Multi-Phase Breast Cancer Segmentation" published in Dispalys
 # Usage
 ## 1.Installation
 Install IEDHTrans as below.
@@ -36,7 +36,7 @@ nnUNetv2_predict -d  DATASET_ID  -i   "your_nnUNet_raw_path/imagesTs/"  -o   "yo
 
 ```
 # Dataset
-A total of three datasets were used in our paper,among which a private datasets was breast cancer, and the other two dataset was a publicly available breast tumor dataset. If you wish to download these two publicly available dataset, please refer to the [paper](https://arxiv.org/abs/2406.13844v1) , the [GitHub](https://github.com/LidiaGarrucho/MAMA-MIA) and the [paper](https://ieeexplore.ieee.org/document/10614219), the [GitHub](https://github.com/ZhouL-lab/PLHN)
+A total of three datasets were used in our paper,among which a private datasets was breast cancer, and the other two dataset was a publicly available breast tumor dataset. If you wish to download these two publicly available dataset, please refer to the [paper](https://arxiv.org/abs/2406.13844v1) , the [GitHub](https://github.com/LidiaGarrucho/MAMA-MIA) and the [paper](https://ieeexplore.ieee.org/document/10614219), the [GitHub](https://github.com/ZhouL-lab/PLHN).
 Additionally, We have made public an available internal clinical breast cancer [dataset](https://drive.google.com/file/d/1KwgF698k9VrfwyT2vf0wbmJa9m6rCKeF/view?usp=drive_link).
 
 ```
