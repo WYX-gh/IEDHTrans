@@ -1,5 +1,10 @@
 # IEDHTrans
 The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders and Differential Hierarchical Transformers for Multi-Phase Breast Cancer Segmentation" published in [Dispalys](https://doi.org/10.1016/j.displa.2025.103193)
+
+# The architecture of IEDHTrans
+![image1](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/IEDHTrans.jpg) 
+![image2](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/MPFI.jpg)
+
 # Usage
 ## 1.Installation
 Install IEDHTrans as below.
@@ -61,6 +66,13 @@ data：
 ```
 Among them, _0000 is the pre-contrast period and _0001 is the first post-contrast period.
 
+# Results
+Experimental results on the MAMA-MIA dataset: 
+![image3](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/Table1_MAMA-MIA%20datasets.png) 
+Experimental results on the PLHN dataset: 
+![image4](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/Table2_PLHN%20datasets.png) 
+Experimental results on the our internal dataset: 
+![image5](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/Table3_internal%20datasets.png)
 
 
 # Baseline Models
