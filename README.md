@@ -1,5 +1,5 @@
 # IEDHTrans
-The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders and Differential Hierarchical Transformers for Multi-Phase Breast Cancer Segmentation" published in Dispalys
+The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders and Differential Hierarchical Transformers for Multi-Phase Breast Cancer Segmentation" published in [Dispalys](https://doi.org/10.1016/j.displa.2025.103193)
 # Usage
 ## 1.Installation
 Install IEDHTrans as below.
@@ -78,3 +78,18 @@ Yuexin Wang (yxwang5212@outlook.com)
 
 # Acknowledgements
 Part of codes are reused from the nnU-Net. Thanks to Fabian Isensee for the codes of nnU-Net.
+
+# Citation
+If you use IEDHTrans for your research or find this dataset useful for your research, please cite our papers:
+```
+@article{WANG2026103193,
+title = {IEDHTrans: A hybrid network with interactive encoders and differential hierarchical transformers for multi-phase breast cancer segmentation},
+journal = {Displays},
+volume = {91},
+pages = {103193},
+year = {2026},
+issn = {0141-9382},
+doi = {https://doi.org/10.1016/j.displa.2025.103193},
+author = {Yuexin Wang and Gesheng Song and Jian Zhang and Fangqing Wang and Haixing Cheng and Yudan Zhao and Peng Zhou and Xu Qiao and Wei Chen}
+}
+```
