@@ -3,7 +3,8 @@ The code for the paper "IEDHTrans: A Hybrid Network with Interactive Encoders an
 
 # The architecture of IEDHTrans
 ![image1](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/IEDHTrans.jpg) 
-![image2](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/MPFI.jpg)
+![image2](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/MPFI.jpg) 
+You can obtain the PDF version of the article from [here](https://github.com/WYX-gh/IEDHTrans/blob/main/IEDHTrans/IEDHTrans.pdf)
 
 # Usage
 ## 1.Installation
