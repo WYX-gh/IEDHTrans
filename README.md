@@ -89,9 +89,6 @@ Should you have any question, please create an issue on this repository or conta
 Yuexin Wang (yxwang5212@outlook.com)
 
 
-# Acknowledgements
-Part of codes are reused from the nnU-Net. Thanks to Fabian Isensee for the codes of nnU-Net.
-
 # Citation
 If you use IEDHTrans for your research or find this dataset useful for your research, please cite our papers:
 ```
@@ -106,3 +103,6 @@ doi = {https://doi.org/10.1016/j.displa.2025.103193},
 author = {Yuexin Wang and Gesheng Song and Jian Zhang and Fangqing Wang and Haixing Cheng and Yudan Zhao and Peng Zhou and Xu Qiao and Wei Chen}
 }
 ```
+
+# Acknowledgements
+Part of codes are reused from the nnU-Net. Thanks to Fabian Isensee for the codes of nnU-Net.
